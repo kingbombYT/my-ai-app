@@ -44,7 +44,12 @@ if generate_btn:
                         "first_frame_image": open("temp_image.jpg", "rb")
                     }
                 )
-                st.success("מוכן!")
-                st.video(output)
+                
+                st.success("✅ הוידאו נוצר בהצלחה!")
+                
+                # --- התיקון שלנו: הפיכת התוצאה לקישור וידאו תקין ---
+                video_url = output[0] if isinstance(output, list) else output
+                st.video(str(video_url))
+                
             except Exception as e:
                 st.error(f"שגיאה: {e}")
