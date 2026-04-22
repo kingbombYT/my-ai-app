@@ -2,7 +2,7 @@ import requests
 import streamlit as st
 
 # הגדרות ה-API שלנו
-API_KEY = "91zxw8LmYvNbfMSXcKUFKGVGntEcN6zi"
+API_KEY = st.secrets["MISTRAL_API_KEY"]
 API_URL = "https://api.mistral.ai/v1/chat/completions"
 
 def chat_with_ai(prompt):
