@@ -1,70 +1,56 @@
-import requests
 import streamlit as st
+import time
 
-# הגדרות ה-API שלנו
-API_KEY = st.secrets["MISTRAL_API_KEY"]
-API_URL = "https://api.mistral.ai/v1/chat/completions"
+# =============================================
+# הגדרות העמוד (הפעם זה סטודיו, לא צ'אט!)
+# =============================================
+st.set_page_config(page_title="AI Video Studio", page_icon="🎬", layout="wide")
+st.title("🎬 הסטודיו הפרטי שלי לייצור וידאו")
+st.markdown("ברוך הבא למערכת! כאן אנחנו שומרים על עקביות של דמויות.")
 
-def chat_with_ai(prompt):
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "model": "mistral-tiny",
-        "messages": [{"role": "user", "content": prompt}],
-    }
-    response = requests.post(API_URL, headers=headers, json=payload)
-    if response.status_code == 200:
-        return response.json()["choices"][0]["message"]["content"]
+# =============================================
+# ממשק המשתמש (UI) מחולק ל-2 עמודות
+# =============================================
+col1, col2 = st.columns(2)
+
+# עמודה 1: העלאת הדמות (עוגן זהות)
+with col1:
+    st.subheader("1. עוגן זהות (הדמות שלך)")
+    st.info("העלה תמונה ברורה של הדמות שתרצה שתופיע בכל הסצנות.")
+    uploaded_image = st.file_uploader("בחר תמונה", type=["jpg", "jpeg", "png"])
+    
+    # אם המשתמש העלה תמונה, נציג אותה כדי שיראה שזה עבד
+    if uploaded_image:
+        st.image(uploaded_image, caption="הדמות נשמרה בהצלחה ומוכנה לאנימציה!", use_container_width=True)
+
+# עמודה 2: כתיבת הפקודה (הסצנה)
+with col2:
+    st.subheader("2. בימוי הסצנה")
+    st.info("מה הדמות עושה עכשיו? (התמונה שהעלית תשמש כרפרנס לפנים ולבגדים)")
+    scene_prompt = st.text_area("תיאור הסצנה:", placeholder="למשל: הדמות יושבת בבית קפה סייברפאנק, שותה אספרסו ומסתכלת למצלמה...")
+    
+    # כפתור השיגור
+    st.write("") # קצת רווח
+    generate_btn = st.button("🚀 צור וידאו עכשיו!", use_container_width=True)
+
+# =============================================
+# אזור התוצאה (הוידאו)
+# =============================================
+st.divider() # קו הפרדה יפה
+
+# מה קורה כשלוחצים על הכפתור?
+if generate_btn:
+    # בודקים שהמשתמש לא שכח כלום
+    if not uploaded_image or not scene_prompt:
+        st.error("⚠️ רגע! חסר משהו. חובה גם להעלות תמונת דמות וגם לכתוב תיאור לסצנה.")
     else:
-        return f"❌ שגיאה: {response.text}"
-
-def perform_action(command):
-    # הפונקציות החכמות שלנו
-    if "חפש" in command:
-        query = command.replace("חפש", "").strip()
-        return f"🔍 מפעיל כלי חיפוש... מחפש ברשת את: '{query}' (דמו)"
-    
-    elif "דוח" in command:
-        topic = command.replace("דוח", "").strip()
-        prompt = f"Write a short, professional market analysis report for '{topic}'. Include target audience, competitors, and growth potential. Format with bullet points."
-        return chat_with_ai(prompt)
-    
-    return None # אם זו סתם שיחה, נחזיר 'כלום' כדי שהאתר ידע שזה צ'אט רגיל
-
-# =============================================
-# עיצוב האתר (Streamlit UI)
-# =============================================
-st.set_page_config(page_title="ה-AI שלי", page_icon="🤖")
-st.title("🤖 הסוכן החכם שלי")
-
-# הגדרה ששומרת את היסטוריית השיחה על המסך
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-# הצגת כל ההודעות הקודמות בצ'אט
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
-
-# שורת ההקלדה למטה
-if prompt := st.chat_input("הקלד משהו, או נסה 'דוח' / 'חפש'"):
-    
-    # הצגת מה שאתה כתבת
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
-
-    # הבוט חושב ועונה
-    with st.chat_message("assistant"):
-        action_result = perform_action(prompt)
-        
-        # בודק אם הפעלנו פעולה או שזו שיחה רגילה
-        if action_result:
-            response = action_result
-        else:
-            response = chat_with_ai(prompt)
+        # אנימציה של טעינה
+        with st.spinner("⏳ מתחבר לשרת הוידאו... מקבע את זהות הדמות..."):
+            time.sleep(3) # מדמה המתנה של כמה שניות של ה-API
             
-        st.markdown(response)
-        st.session_state.messages.append({"role": "assistant", "content": response})
+            st.success("✅ הוידאו נוצר בהצלחה!")
+            
+            # מציגים נגן וידאו אמיתי (כרגע עם סרטון בדיקה חינמי מהאינטרנט)
+            st.video("https://www.w3schools.com/html/mov_bbb.mp4")
+            
+            st.warning("💡 זהו סרטון דמו שנועד לבדוק את נגן הוידאו שלנו. השלב הבא: לחבר את הכפתור הזה ל-API של קלינג או Veo כדי שיפיק את הסרטון האמיתי שלך!")
